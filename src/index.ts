@@ -40,12 +40,11 @@ class ProjectScraper {
         '--disable-accelerated-2d-canvas',
         '--no-first-run',
         '--no-zygote',
-        '--disable-gpu'
+        '--disable-gpu',
+        '--disable-software-rasterizer'
       ],
-      headless: true,
-      executablePath: process.env.NODE_ENV === 'production' 
-        ? '/usr/bin/google-chrome'
-        : process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+      headless: true as boolean,
+      executablePath: '/usr/bin/google-chrome-stable',
       ignoreDefaultArgs: ['--disable-extensions'],
       timeout: 30000
     })
