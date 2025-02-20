@@ -3,6 +3,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import puppeteer from 'puppeteer'
 import * as cheerio from 'cheerio'
+import { serve } from '@hono/node-server'
 
 config();
 
@@ -154,5 +155,20 @@ app.post('/scrape', async (c) => {
     }, 500)
   }
 })
+
+// Replace the server startup code
+const port = process.env.PORT ? parseInt(process.env.PORT) : 3000
+
+if (!process.env.API_KEY) {
+  console.warn('Warning: API_KEY environment variable is not set')
+}
+
+if (process.env.NODE_ENV !== 'test') {
+  serve({
+    fetch: app.fetch,
+    port
+  })
+  console.log(`Server is running on port ${port}`)
+}
 
 export default app
