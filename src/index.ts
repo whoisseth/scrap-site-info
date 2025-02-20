@@ -44,7 +44,8 @@ class ProjectScraper {
       ],
       headless: true,
       executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-      ignoreDefaultArgs: false
+      ignoreDefaultArgs: ['--disable-extensions'],
+      timeout: 30000
     })
   }
 
