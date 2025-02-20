@@ -41,12 +41,14 @@ class ProjectScraper {
         '--no-first-run',
         '--no-zygote',
         '--disable-gpu',
-        '--disable-software-rasterizer'
+        '--disable-software-rasterizer',
+        '--disable-web-security',
+        '--disable-features=IsolateOrigins,site-per-process'
       ],
       headless: true as boolean,
       executablePath: '/usr/bin/google-chrome-stable',
       ignoreDefaultArgs: ['--disable-extensions'],
-      timeout: 30000
+      timeout: 80000
     })
   }
 
@@ -55,27 +57,52 @@ class ProjectScraper {
     try {
       const page = await browser.newPage()
       
+      // Set longer timeout for navigation
+      page.setDefaultNavigationTimeout(60000)
+      page.setDefaultTimeout(60000)
+      
       // Collect screenshots for different viewports
       const screenshots: { [key: string]: string } = {}
       
       for (const [size, dimensions] of Object.entries(VIEWPORT_SIZES)) {
         await page.setViewport(dimensions)
-        await page.goto(url, {
-          waitUntil: 'networkidle0',
-          timeout: 30000,
-        })
-
-        const screenshot = await page.screenshot({
-          type: 'jpeg',
-          quality: 80,
-          fullPage: false
-        })
         
-        const screenshotBase64 = Buffer.from(screenshot).toString('base64')
-        screenshots[size] = `data:image/jpeg;base64,${screenshotBase64}`
+        // Add error handling for navigation
+        try {
+          await page.goto(url, {
+            waitUntil: ['load', 'domcontentloaded', 'networkidle0'],
+            timeout: 60000,
+          })
+        } catch (error) {
+          console.error(`Navigation error for ${size} viewport:`, error)
+          // Continue with partial data if navigation fails
+          continue
+        }
+
+        try {
+          const screenshot = await page.screenshot({
+            type: 'jpeg',
+            quality: 80,
+            fullPage: false
+          })
+          
+          const screenshotBase64 = Buffer.from(screenshot).toString('base64')
+          screenshots[size] = `data:image/jpeg;base64,${screenshotBase64}`
+        } catch (error) {
+          console.error(`Screenshot error for ${size} viewport:`, error)
+          continue
+        }
       }
 
-      const content = await page.content()
+      // Get page content with error handling
+      let content = ''
+      try {
+        content = await page.content()
+      } catch (error) {
+        console.error('Error getting page content:', error)
+        content = '<html></html>' // Fallback content
+      }
+
       const $ = cheerio.load(content)
 
       const title = $('title').text() || $('h1').first().text() || ''
