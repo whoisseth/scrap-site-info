@@ -43,7 +43,9 @@ class ProjectScraper {
         '--disable-gpu'
       ],
       headless: true,
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+      executablePath: process.env.NODE_ENV === 'production' 
+        ? '/usr/bin/google-chrome'
+        : process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
       ignoreDefaultArgs: ['--disable-extensions'],
       timeout: 30000
     })

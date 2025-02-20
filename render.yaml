@@ -1,20 +1,22 @@
 services:
   - type: web
-    name: scrap-site-info
-    runtime: node
+    name: scraper-api
+    runtime: docker
     plan: free
-    buildCommand: pnpm install && pnpm build
-    startCommand: pnpm start
+    buildCommand: docker build -t scraper-api .
+    startCommand: docker run -p $PORT:3000 scraper-api
     envVars:
-      - key: NODE_VERSION
-        value: 18.x
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: "3000"
     buildFilter:
       paths:
         - src/**
         - package.json
         - pnpm-lock.yaml
+        - Dockerfile
+    autoDeploy: true
     initialDeployHook: |
       apt-get update && apt-get install -y \
         ca-certificates \
