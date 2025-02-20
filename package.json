@@ -10,7 +10,8 @@
     "cheerio": "^1.0.0",
     "dotenv": "^16.4.7",
     "hono": "^4.7.2",
-    "puppeteer": "^24.2.1"
+    "puppeteer": "^21.7.0",
+    "@types/puppeteer": "^7.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
